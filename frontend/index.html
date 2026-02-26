@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Obsidian Luxe</title>
+
+    <!-- Telegram WebApp Script -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <!-- Floating Background Particles -->
+    <div class="background"></div>
+
+    <!-- Main App Container -->
+    <div class="app">
+
+        <!-- Header -->
+        <header class="header glass">
+            <div class="balance-box">
+                <div class="balance">
+                    <span>🪙</span>
+                    <h3 id="coinBalance">0</h3>
+                </div>
+                <div class="balance">
+                    <span>💵</span>
+                    <h3 id="cashBalance">0.00 ৳</h3>
+                </div>
+            </div>
+        </header>
+
+        <!-- Page Container -->
+        <main id="pageContent">
+
+            <!-- HOME PAGE -->
+            <section class="page active" id="homePage">
+                <div class="tap-container">
+                    <div class="tap-button" id="tapButton">
+                        <img src="assets/hamster.png" class="tap-image" />
+                    </div>
+                </div>
+
+                <div class="tap-power" id="tapPowerDisplay">
+                    Tap Power: x1
+                </div>
+
+
+
+
+                <!-- ===== APP INFO SECTION ===== -->
+
+                <div class="home-info glass">
+
+                    <h2 class="app-title">⚡ Obsidian Luxe</h2>
+
+                    <p class="app-desc">
+                        Premium Telegram Earning Mini App.
+                        Earn coins by watching ads, completing shortlinks,
+                        spinning the wheel and daily bonuses.
+                    </p>
+
+                    <p class="trust-badge">
+                        🔒 100% Secure • Transparent System • Daily Rewards
+                    </p>
+
+                    <button class="channel-btn" onclick="window.open('https://t.me/obsidianluxe0', '_blank')">
+                        📢 Join Official Channel
+                    </button>
+
+                    <div class="highlight-box">
+                        <p>💰 Fast & Safe Withdraw</p>
+                        <p>🎯 Fair Reward System</p>
+                        <p>🚀 Long-Term Sustainable Economy</p>
+                    </div>
+
+                </div>
+
+
+
+
+
+
+
+            </section>
+
+            <!-- 30 days Login-->
+
+
+
+
+            <!-- EARN PAGE -->
+            <section class="page" id="earnPage">
+
+                <div class="card glass">
+                    <h3>Watch Ad</h3>
+                    <p>Reward: 75 Coin</p>
+                    <p>Daily Limit: 300</p>
+                    <button onclick="watchAd()">Watch Now</button>
+                    <p id="adStatus"></p>
+                </div>
+
+                <div class="card glass" id="loginBonusCard">
+                    <h3>30 Days Login Bonus</h3>
+
+                    <div id="loginGrid" class="login-grid"></div>
+
+                    <button onclick="claimLoginBonus()">Claim Today</button>
+                </div>
+
+                <div class="card glass">
+                    <h3>Daily Bonus</h3>
+                    <p>Reward: 100 Coin</p>
+                    <button onclick="claimDailyBonus()">Claim</button>
+                </div>
+
+                <div class="card glass">
+                    <h3>Shortlink</h3>
+                    <p>Reward: 80 Coin</p>
+                    <p>Daily Limit: 200</p>
+                    <button onclick="openShortlink()">Open Shortlink</button>
+                </div>
+
+                <div class="card glass">
+                    <h3>Spin Wheel</h3>
+
+                    <div class="wheel-container">
+                        <canvas id="spinCanvas" width="300" height="300"></canvas>
+                        <div class="center-cap"></div>
+                        <div class="pointer"></div>
+                    </div>
+
+                    <button onclick="spinWheel()">Spin</button>
+                    <button onclick="spinViaAd()">Watch Ad for Spin</button>
+
+                    <p id="spinResult"></p>
+                </div>
+
+            </section>
+
+            <!-- INVITE PAGE -->
+            <section class="page" id="invitePage">
+
+                <div class="card glass">
+                    <h3>Your Referral Code</h3>
+                    <p id="refCodeText">Loading...</p>
+                    <button onclick="copyRefLink()">Copy Referral Link</button>
+                </div>
+
+                <div class="card glass">
+                    <h3>Referral Stats</h3>
+                    <p>Total Referred: <span id="totalReferred">0</span></p>
+                    <p>Total Referral Earned: <span id="refEarned">0</span> coin</p>
+                </div>
+
+                <div class="card glass">
+                    <h3>Referral List</h3>
+                    <div id="refList"></div>
+                </div>
+
+            </section>
+
+            <!-- WALLET PAGE -->
+            <section class="page" id="walletPage">
+
+                <div class="card glass">
+                    <h3>Convert Coin → Cash</h3>
+                    <p>Rate: 1000 Coin = 1 ৳</p>
+                    <p>Minimum Convert: 1,000,000 Coin</p>
+
+                    <input type="number" id="convertAmount" placeholder="Enter coin amount" />
+                    <button onclick="convertCoin()">Convert</button>
+                </div>
+
+                <div class="card glass">
+                    <h3>Withdraw</h3>
+                    <p>Minimum Withdraw: 1000 ৳</p>
+
+                    <input type="text" id="withdrawName" placeholder="Your Name" />
+                    <select id="withdrawMethod">
+                        <option value="">Select Payment Method</option>
+                        <option value="bKash">bKash</option>
+                        <option value="Nagad">Nagad</option>
+                        <option value="Rocket">Rocket</option>
+                        <option value="Upay">Upay</option>
+                    </select>
+                    <input type="text" id="withdrawNumber" placeholder="Phone / Payment ID" />
+                    <input type="number" id="withdrawAmount" placeholder="Amount (৳)" />
+
+                    <button onclick="submitWithdraw()">Submit Request</button>
+                </div>
+
+            </section>
+
+
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav glass">
+            <button onclick="switchPage('homePage')">Home</button>
+            <button onclick="switchPage('earnPage')">Earn</button>
+            <button onclick="switchPage('invitePage')">Invite</button>
+            <button onclick="switchPage('walletPage')">Wallet</button>
+        </nav>
+
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

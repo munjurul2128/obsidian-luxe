@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - Obsidian Luxe</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<div class="dashboard-container">
+
+    <div class="sidebar glass">
+        <h2>⚡ Admin</h2>
+        <button onclick="loadDashboard()">Dashboard</button>
+        <button onclick="loadWithdraw()">Withdraw</button>
+        <button onclick="loadUsers()">Users</button>
+        <button onclick="loadAnnouncement()">Announcement</button>
+        <button onclick="loadSettings()">Settings</button>
+        <button onclick="logout()">Logout</button>
+    </div>
+
+    <div class="main-content glass">
+        <h2 id="pageTitle">Dashboard</h2>
+        <div id="contentArea"></div>
+    </div>
+
+</div>
+
+<script src="admin.js"></script>
+<script>
+    verifyToken();
+    loadDashboard();
+</script>
+
+</body>
+</html>

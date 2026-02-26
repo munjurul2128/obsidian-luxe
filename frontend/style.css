@@ -1,0 +1,448 @@
+/* RESET */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    height: 100vh;
+    color: white;
+}
+
+/* BACKGROUND */
+.background {
+    position: fixed;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.05), transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.05), transparent 40%);
+    animation: moveBg 20s linear infinite;
+}
+
+@keyframes moveBg {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    50% {
+        transform: translate(-10%, -10%);
+    }
+
+    100% {
+        transform: translate(0, 0);
+    }
+}
+
+.app {
+    position: relative;
+    z-index: 10;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* GLASS */
+.glass {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+/* HEADER */
+.header {
+    padding: 15px;
+}
+
+.balance-box {
+    display: flex;
+    justify-content: space-between;
+}
+
+/* PAGE */
+.page {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    padding-bottom: 100px;
+    /* space for navbar */
+}
+
+.page:not(.active) {
+    display: none;
+}
+
+/* TAP BUTTON */
+.tap-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.tap-button {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #6a00ff, #00f2ff);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 28px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+    box-shadow: 0 0 40px rgba(0, 255, 255, 0.6);
+}
+
+
+/* ===============================
+   TAP HERO GLOW PULSE
+================================ */
+
+.tap-button {
+    position: relative;
+    animation: pulseGlow 2s infinite ease-in-out;
+}
+
+@keyframes pulseGlow {
+    0% {
+        box-shadow: 0 0 25px rgba(0, 255, 255, 0.5);
+    }
+
+    50% {
+        box-shadow: 0 0 60px rgba(0, 255, 255, 0.9);
+    }
+
+    100% {
+        box-shadow: 0 0 25px rgba(0, 255, 255, 0.5);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+.tap-button:active {
+    transform: scale(0.92);
+}
+
+
+/* ===============================
+   TAP IMAGE STYLE
+================================ */
+
+.tap-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    border-radius: 50%;
+    width: 160px;
+    height: 160px;
+}
+
+/* ===============================
+   FULL CIRCLE HAMSTER IMAGE
+================================ */
+
+.tap-button {
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(145deg, #e20d2a2f, #ff00952d);
+    padding: 1px;
+}
+
+.tap-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Important */
+    border-radius: 50%;
+    pointer-events: none;
+    transition: transform 0.2s ease;
+}
+
+.tap-button:active .tap-image {
+    transform: scale(0.92);
+}
+
+.tap-button:active .tap-image {
+    transform: scale(0.9);
+}
+
+
+/* CARD */
+.card {
+    padding: 20px;
+    margin-bottom: 15px;
+    text-align: center;
+    font-weight: 600;
+}
+
+/* FIXED BOTTOM NAV */
+.bottom-nav {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    justify-content: space-around;
+    padding: 15px;
+    z-index: 20;
+}
+
+.bottom-nav button {
+    background: transparent;
+    border: none;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+
+.tap-power {
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: 600;
+    font-size: 18px;
+    color: #00f2ff;
+    text-shadow: 0 0 10px #00f2ff;
+}
+
+/* Upgrade Button */
+.card button {
+    margin-top: 10px;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(145deg, #6a00ff, #00f2ff);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.card button:hover {
+    transform: scale(1.05);
+}
+
+.card button:active {
+    transform: scale(0.95);
+}
+
+/* Wallet Page */
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+}
+
+
+
+
+
+/* Spin Wheel */
+
+.wheel-container {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    margin: 20px auto;
+}
+
+#spinCanvas {
+    border-radius: 50%;
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.6);
+    transition: transform 4s cubic-bezier(0.33, 1, 0.68, 1);
+    transform: rotate(0deg);
+}
+
+.pointer {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-bottom: 30px solid gold;
+}
+
+.center-cap {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(circle, #00f2ff, #6a00ff);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 20px #00f2ff;
+}
+
+
+
+/* 30 Days Login Bonus */
+
+.login-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin: 15px 0;
+}
+
+.login-day {
+    padding: 8px;
+    font-size: 12px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    text-align: center;
+}
+
+.login-day.claimed {
+    background: green;
+}
+
+.login-day.today {
+    border: 2px solid gold;
+}
+
+
+
+/* Withdraw Form */
+
+select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+}
+
+
+
+
+/* TOAST SYSTEM */
+
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    padding: 12px 18px;
+    border-radius: 12px;
+    backdrop-filter: blur(20px);
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+    animation: slideIn 0.3s ease;
+}
+
+.toast.success {
+    border-left: 4px solid #00ff99;
+}
+
+.toast.error {
+    border-left: 4px solid #ff4d4d;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+
+
+
+
+
+/* ===============================
+   HOME INFO SECTION
+================================ */
+
+.home-info {
+    padding: 20px;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.app-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #00f2ff;
+    margin-bottom: 10px;
+    text-shadow: 0 0 10px #00f2ff;
+}
+
+.app-desc {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-bottom: 10px;
+    line-height: 1.6;
+}
+
+.trust-badge {
+    font-size: 13px;
+    margin-bottom: 15px;
+    color: #00ffcc;
+    font-weight: 600;
+}
+
+.channel-btn {
+    margin-top: 10px;
+    padding: 10px 18px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(145deg, #ff006a, #ff8c00);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.channel-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(255, 100, 0, 0.6);
+}
+
+.highlight-box {
+    margin-top: 15px;
+    font-size: 13px;
+    opacity: 0.85;
+    line-height: 1.6;
+}
