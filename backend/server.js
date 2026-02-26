@@ -2136,7 +2136,6 @@ async function seedAdmin() {
             }
         ]);
 
-        console.log("✅ Default admin created (admin / admin123)");
     }
 }
 
