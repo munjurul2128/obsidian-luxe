@@ -126,11 +126,6 @@ const limiter = rateLimit({
 
 app.use(limiter);
 
-app.use(userRateLimiter);
-
-app.use(checkUserSuspended);
-
-app.use(checkMaintenance);
 
 
 
@@ -344,7 +339,7 @@ app.post("/auth", async (req, res) => {
 // ==========================
 // TAP ROUTE
 // ==========================
-app.post("/tap", async (req, res) => {
+app.post("/tap", checkMaintenance, checkUserSuspended, userRateLimiter, async (req, res) => {
 
     const tapEnabled = await getBoolSetting("tap_enabled");
 
@@ -464,7 +459,7 @@ app.post("/tap", async (req, res) => {
 // ==========================
 // SECURE SPIN ROUTE
 // ==========================
-app.post("/spin", async (req, res) => {
+app.post("/spin", checkMaintenance, checkUserSuspended, userRateLimiter, async (req, res) => {
 
     const spinEnabled = await getBoolSetting("spin_enabled");
 
@@ -623,7 +618,7 @@ app.post("/spin", async (req, res) => {
 // ==========================
 // WATCH AD ROUTE BACKEND
 // ==========================
-app.post("/watch-ad", async (req, res) => {
+app.post("/watch-ad", checkMaintenance, checkUserSuspended, userRateLimiter, async (req, res) => {
     const { telegram_id, timeSpent } = req.body;
 
     if (!telegram_id) {
@@ -752,7 +747,7 @@ app.post("/watch-ad", async (req, res) => {
 // ==========================
 // SHORTLINK ROUTE
 // ==========================
-app.post("/shortlink", async (req, res) => {
+app.post("/shortlink", checkMaintenance, checkUserSuspended, userRateLimiter, async (req, res) => {
 
     const shortlinkEnabled = await getBoolSetting("shortlink_enabled");
 
@@ -893,7 +888,7 @@ app.post("/shortlink", async (req, res) => {
 // ==========================
 // WITHDRAW ROUTE FROM BACKEND
 // ==========================
-app.post("/withdraw", async (req, res) => {
+app.post("/withdraw", checkMaintenance, checkUserSuspended, userRateLimiter, async (req, res) => {
 
     const withdrawEnabled = await getBoolSetting("withdraw_enabled");
 
@@ -1004,7 +999,7 @@ app.post("/withdraw", async (req, res) => {
 // ==========================
 // CONVERT COIN TO CASH ROUTE
 // ==========================
-app.post("/convert", async (req, res) => {
+app.post("/convert", checkMaintenance, checkUserSuspended, userRateLimiter, async (req, res) => {
     const { telegram_id, coin_amount } = req.body;
 
     if (!coin_amount || Number(coin_amount) <= 0) {
@@ -1091,7 +1086,7 @@ app.post("/convert", async (req, res) => {
 // ==========================
 // REFERRAL STATS ROUTE
 // ==========================
-app.post("/referral-stats", async (req, res) => {
+app.post("/referral-stats", checkMaintenance, checkUserSuspended, userRateLimiter, async (req, res) => {
     const { telegram_id } = req.body;
 
     if (!telegram_id) {
@@ -1145,7 +1140,7 @@ app.post("/referral-stats", async (req, res) => {
 // ==========================
 // DAILY BONUS ROUTE
 // ==========================
-app.post("/daily-bonus", async (req, res) => {
+app.post("/daily-bonus", checkMaintenance, checkUserSuspended, userRateLimiter, async (req, res) => {
     const { telegram_id } = req.body;
 
     if (!telegram_id) {
@@ -1216,7 +1211,7 @@ app.post("/daily-bonus", async (req, res) => {
 // ==========================
 // 30 DAYS LOGIN BONUS ROUTE
 // ==========================
-app.post("/claim-login-bonus", async (req, res) => {
+app.post("/claim-login-bonus", checkMaintenance, checkUserSuspended, userRateLimiter, async (req, res) => {
 
     const loginBonusEnabled = await getBoolSetting("login_bonus_enabled");
     if (!loginBonusEnabled) {
