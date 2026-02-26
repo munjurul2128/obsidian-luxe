@@ -1,4 +1,4 @@
-const API_BASE = "https://obsidian-luxe.onrender.com";
+const API_BASE = window.location.origin;
 
 async function adminLogin() {
 
@@ -68,7 +68,7 @@ async function loadDashboard() {
 
     const token = localStorage.getItem("adminToken");
 
-    const res = await fetch("http://localhost:5000/admin/dashboard", {
+    const res = await fetch(`${API_BASE}/admin/dashboard`, {
         headers: {
             "Authorization": "Bearer " + token
         }
@@ -148,7 +148,7 @@ async function loadWithdraw(status = "all") {
 
     const token = localStorage.getItem("adminToken");
 
-    let url = "http://localhost:5000/admin/withdraw-list";
+    let url = `${API_BASE}/admin/withdraw-list`;
 
     if (status !== "all") {
         url += `?status=${status}`;
@@ -222,7 +222,7 @@ async function approveWithdraw(id) {
 
     const token = localStorage.getItem("adminToken");
 
-    await fetch("http://localhost:5000/admin/approve-withdraw", {
+    await fetch(`${API_BASE}/admin/approve-withdraw`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -245,7 +245,7 @@ async function rejectWithdraw(id) {
 
     const token = localStorage.getItem("adminToken");
 
-    await fetch("http://localhost:5000/admin/reject-withdraw", {
+    await fetch(`${API_BASE}/admin/reject-withdraw`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -274,8 +274,7 @@ async function loadUsers(search = "") {
 
     const token = localStorage.getItem("adminToken");
 
-    const res = await fetch(
-        `http://localhost:5000/admin/users?search=${search}`,
+    const res = await fetch(`${API_BASE}/admin/users?search=${search}`,
         {
             headers: {
                 "Authorization": "Bearer " + token
@@ -355,7 +354,7 @@ async function viewUser(id) {
 
     const token = localStorage.getItem("adminToken");
 
-    const res = await fetch(`http://localhost:5000/admin/user/${id}`, {
+    const res = await fetch(`${API_BASE}/admin/user/${id}`, {
         headers: {
             "Authorization": "Bearer " + token
         }
@@ -431,7 +430,7 @@ async function updateCoin(userId) {
     const amount = document.getElementById("coinAmount").value;
     const token = localStorage.getItem("adminToken");
 
-    await fetch("http://localhost:5000/admin/update-coin", {
+    await fetch(`${API_BASE}/admin/update-coin`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -456,7 +455,7 @@ async function updateCash(userId) {
     const amount = document.getElementById("cashAmount").value;
     const token = localStorage.getItem("adminToken");
 
-    await fetch("http://localhost:5000/admin/update-cash", {
+    await fetch(`${API_BASE}/admin/update-cash`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -480,7 +479,7 @@ async function toggleSuspend(userId) {
 
     const token = localStorage.getItem("adminToken");
 
-    await fetch("http://localhost:5000/admin/toggle-suspend", {
+    await fetch(`${API_BASE}/admin/toggle-suspend`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -506,7 +505,7 @@ async function loadSettings() {
 
     const token = localStorage.getItem("adminToken");
 
-    const res = await fetch("http://localhost:5000/admin/settings", {
+    const res = await fetch(`${API_BASE}/admin/settings`, {
         headers: {
             "Authorization": "Bearer " + token
         }
@@ -605,7 +604,7 @@ async function saveSettings() {
     ];
     for (let s of settingsToUpdate) {
 
-        await fetch("http://localhost:5000/admin/update-setting", {
+        await fetch(`${API_BASE}/admin/update-setting`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -630,7 +629,7 @@ async function loadAnnouncement() {
 
     const token = localStorage.getItem("adminToken");
 
-    const res = await fetch("http://localhost:5000/admin/get-announcement", {
+    const res = await fetch(`${API_BASE}/admin/get-announcement`, {
         headers: {
             "Authorization": "Bearer " + token
         }
@@ -680,7 +679,7 @@ async function saveAnnouncement() {
     const is_active =
         document.getElementById("announcementActive").checked;
 
-    await fetch("http://localhost:5000/admin/set-announcement", {
+    await fetch(`${API_BASE}/admin/set-announcement`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
