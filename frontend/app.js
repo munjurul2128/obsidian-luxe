@@ -521,7 +521,7 @@ async function convertCoin() {
 
 // Watch Ad
 
-function watchAd() {
+async function watchAd() {
 
     if (!currentUser) {
         showToast("User not authenticated", "error");
@@ -539,17 +539,40 @@ function watchAd() {
     button.disabled = true;
     button.innerText = "Opening...";
 
-    const adLink = "https://example.com";
-
-    state.adStartTime = Date.now();
     state.adPending = true;
 
-    window.open(adLink, "_blank");
+    try {
 
-    setTimeout(() => {
-        button.disabled = false;
-        button.innerText = "Watch Now";
-    }, 2000);
+        // 🔥 Monetag Rewarded Interstitial
+        await show_10659418();
+
+        // Ad finished → call backend for reward
+        const res = await fetch("/watch-ad", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                telegram_id: currentUser.telegram_id,
+                timeSpent: 20
+            })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            showToast("Reward added ✅", "success");
+        } else {
+            showToast(data.error, "error");
+        }
+
+    } catch (err) {
+        console.log("Ad skipped or failed");
+    }
+
+    state.adPending = false;
+    button.disabled = false;
+    button.innerText = "Watch Now";
 }
 
 
