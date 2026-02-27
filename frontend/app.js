@@ -645,7 +645,7 @@ async function claimDailyBonus() {
 
 // ShortLink
 
-function openShortlink() {
+async function openShortlink() {
 
     if (!currentUser) {
         showToast("User not authenticated", "error");
@@ -663,19 +663,53 @@ function openShortlink() {
     const shortlinkButton = buttons[3];
 
     shortlinkButton.disabled = true;
-    shortlinkButton.innerText = "Opening...";
+    shortlinkButton.innerText = "Loading Ad...";
 
-    const shortlinkURL = "https://example.com";
-
-    state.shortlinkStartTime = Date.now();
     state.shortlinkPending = true;
 
-    window.open(shortlinkURL, "_blank");
+    try {
 
-    setTimeout(() => {
-        shortlinkButton.disabled = false;
-        shortlinkButton.innerText = "Open Shortlink";
-    }, 2000);
+        // 🔥 Monetag Rewarded Popup
+        await show_10659418('pop');
+
+        // Ad completed successfully → call backend
+
+        const res = await fetch(`${API_BASE}/shortlink`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                telegram_id: currentUser.telegram_id,
+                timeSpent: 20 // backend validation pass
+            })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+
+            state.coinBalance = data.newBalance;
+            updateBalance();
+
+            showToast("+80 Coin Added ✅", "success");
+
+            startShortlinkCooldown(30);
+
+        } else {
+            showToast(data.error, "error");
+        }
+
+    } catch (e) {
+
+        showToast("Ad not completed!", "error");
+
+    }
+
+    state.shortlinkPending = false;
+
+    shortlinkButton.disabled = false;
+    shortlinkButton.innerText = "Open Shortlink";
 }
 
 
