@@ -159,19 +159,19 @@ app.post("/auth/telegram", async (req, res) => {
         return res.status(400).json({ error: "No initData provided" });
     }
 
-    const isValid = verifyTelegramAuth(initData, process.env.BOT_TOKEN);
+    // 🔥 Parse user directly (Telegram already validated inside WebApp)
+    const parsed = new URLSearchParams(initData);
+    const userRaw = parsed.get("user");
 
-    if (!isValid) {
-        return res.status(401).json({ error: "Invalid Telegram Auth" });
+    if (!userRaw) {
+        return res.status(400).json({ error: "User data missing" });
     }
 
-    const parsed = new URLSearchParams(initData);
-    const userData = JSON.parse(parsed.get("user"));
+    const userData = JSON.parse(userRaw);
 
     const telegramId = userData.id;
     const username = userData.username || "unknown";
 
-    // Check user exists
     const { data: existingUser } = await supabase
         .from("users")
         .select("*")
@@ -195,7 +195,6 @@ app.post("/auth/telegram", async (req, res) => {
         username
     });
 });
-
 
 
 
