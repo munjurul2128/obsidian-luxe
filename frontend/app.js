@@ -1,4 +1,4 @@
-const API_BASE = ""; 
+const API_BASE = window.location.origin;
 let currentUser = null;
 
 
