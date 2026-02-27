@@ -562,6 +562,11 @@ async function watchAd() {
 
         if (data.success) {
             showToast("Reward added ✅", "success");
+
+            state.coinBalance = data.newBalance;
+            updateBalance();
+
+
         } else {
             showToast(data.error, "error");
         }
