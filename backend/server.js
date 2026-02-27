@@ -306,40 +306,56 @@ app.post("/auth", async (req, res) => {
     }
 
     // If referral code provided → reward referrer
+    // If referral code provided → reward referrer
     if (referral_code) {
 
-        const { data: referrer } =
-            await supabase
-                .from("users")
-                .select("*")
-                .eq("referral_code", referral_code)
-                .single();
+        const { data: referrer } = await supabase
+            .from("users")
+            .select("*")
+            .eq("referral_code", referral_code)
+            .single();
 
-        if (referrer && referrer.telegram_id !== telegram_id) {
+        if (referrer && Number(referrer.telegram_id) !== Number(telegram_id)) {
 
-            await supabase.rpc("increment_coin", {
-                user_telegram_id: referrer.telegram_id,
-                amount_to_add: 1000
-            });
-
-            await supabase
+            // Prevent duplicate referral
+            const { data: existingReferral } = await supabase
                 .from("referrals")
-                .insert([
-                    {
-                        referrer_id: referrer.id,
-                        referred_user_id: newUser.id
-                    }
-                ]);
+                .select("*")
+                .eq("referred_user_id", newUser.id)
+                .maybeSingle();
 
-            await supabase
-                .from("transactions")
-                .insert([
-                    {
-                        user_id: referrer.id,
-                        type: "referral_bonus",
-                        amount: 1000
-                    }
-                ]);
+            if (!existingReferral) {
+
+                // 🔥 Add 1000 coin to referrer
+                await supabase
+                    .from("users")
+                    .update({
+                        coin_balance: referrer.coin_balance + 1000,
+                        total_ref_earned: referrer.total_ref_earned + 1000
+                    })
+                    .eq("id", referrer.id);
+
+                // Insert referral record
+                await supabase
+                    .from("referrals")
+                    .insert([
+                        {
+                            referrer_id: referrer.id,
+                            referred_user_id: newUser.id
+                        }
+                    ]);
+
+                // Transaction log
+                await supabase
+                    .from("transactions")
+                    .insert([
+                        {
+                            user_id: referrer.id,
+                            type: "referral_bonus",
+                            amount: 1000
+                        }
+                    ]);
+            }
         }
     }
 
