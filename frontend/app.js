@@ -1114,12 +1114,14 @@ function initReferral() {
 
 function copyRefLink() {
 
+    const botUsername = "obsidianluxe_bot"; // 🔥 তোমার আসল bot username বসাও
+
     const link =
-        "https://t.me/YOUR_BOT_USERNAME?start=" + state.refCode;
+        `https://t.me/${botUsername}?start=${state.refCode}`;
 
     navigator.clipboard.writeText(link);
 
-    alert("Referral link copied!");
+    showToast("Referral link copied!", "success");
 }
 
 
@@ -1233,12 +1235,18 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     // After telegram auth → call /auth route
+    const tg = window.Telegram.WebApp;
+
+    // 🔥 Get referral code from Telegram start param
+    const startParam = tg.initDataUnsafe?.start_param || null;
+
     const res = await fetch(`${API_BASE}/auth`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             telegram_id: currentUser.telegram_id,
-            username: currentUser.username
+            username: currentUser.username,
+            referral_code: startParam
         })
     });
 
