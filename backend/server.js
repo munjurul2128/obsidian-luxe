@@ -221,6 +221,22 @@ app.post("/auth", async (req, res) => {
 
     if (existingUser) {
 
+        // 🔥 Ensure referral_code always exists
+        if (!existingUser.referral_code) {
+
+            const generatedCode = "REF" + Math.floor(Math.random() * 1000000);
+
+            const { data: updatedUser } = await supabase
+                .from("users")
+                .update({ referral_code: generatedCode })
+                .eq("telegram_id", telegram_id)
+                .select()
+                .single();
+
+            return res.json({ user: updatedUser });
+        }
+
+
         const today = new Date();
         const todayStr = today.toISOString().split("T")[0];
 

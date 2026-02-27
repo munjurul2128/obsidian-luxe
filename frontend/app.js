@@ -1111,13 +1111,14 @@ function initReferral() {
     renderReferralUI();
 }
 
-
 function copyRefLink() {
 
-    const botUsername = "obsidianluxe_bot"; // 🔥 তোমার আসল bot username বসাও
+    if (!state.refCode) {
+        showToast("Referral code not loaded yet.", "error");
+        return;
+    }
 
-    const link =
-        `https://t.me/${botUsername}?start=${state.refCode}`;
+    const link = `https://t.me/obsidianluxebot?start=${state.refCode}`;
 
     navigator.clipboard.writeText(link);
 
