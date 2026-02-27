@@ -186,7 +186,7 @@ app.post("/auth/telegram", async (req, res) => {
         .single();
 
     // 🔥 Get referral start_param
-    const startParam = parsed.get("start_param");
+    const startParam = req.query.start || null;
     console.log("START PARAM:", startParam);
 
     if (!existingUser) {

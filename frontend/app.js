@@ -19,28 +19,30 @@ let COIN_RATE = 1000;
 async function telegramLogin() {
 
     const tg = window.Telegram.WebApp;
-
     tg.expand();
+
+    // ✅ আগে URL থেকে referral নাও
+    const urlParams = new URLSearchParams(window.location.search);
+    const startParam = urlParams.get("start");
 
     const res = await fetch("/auth/telegram", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            initData: tg.initData
+            initData: tg.initData,
+            startParam: startParam
         })
     });
 
     const data = await res.json();
 
     if (data.success) {
-        currentUser = data;   // 🔥 full user object
-
+        currentUser = data;
         console.log("Telegram Auth Success:", currentUser);
     } else {
         alert("Telegram Auth Failed");
     }
 }
-
 
 
 
