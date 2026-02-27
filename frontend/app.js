@@ -1239,7 +1239,16 @@ document.addEventListener("DOMContentLoaded", async function () {
     const tg = window.Telegram.WebApp;
 
     // 🔥 Get referral code from Telegram start param
-    const startParam = tg.initDataUnsafe?.start_param || null;
+    // 🔥 Get referral code from Telegram initData (production safe)
+
+    let startParam = null;
+
+    if (tg.initData) {
+        const params = new URLSearchParams(tg.initData);
+        startParam = params.get("start_param");
+    }
+
+    console.log("Referral Start Param:", startParam);
 
     const res = await fetch(`${API_BASE}/auth`, {
         method: "POST",
