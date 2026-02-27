@@ -1143,7 +1143,7 @@ app.post("/referral-stats", checkMaintenance, checkUserSuspended, userRateLimite
         .from("transactions")
         .select("amount")
         .eq("user_id", user.id)
-        .eq("type", "referral_income");
+        .in("type", ["referral_bonus", "referral_income"]);
 
     let totalEarned = 0;
     if (refTransactions) {
