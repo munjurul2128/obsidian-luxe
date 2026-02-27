@@ -849,15 +849,10 @@ async function spinWheel() {
 
 // Spin For Ads
 
-function spinViaAd() {
+async function spinViaAd() {
 
     if (!currentUser) {
         showToast("User not authenticated", "error");
-        return;
-    }
-
-    if (state.spinAdPending) {
-        showToast("Please wait...", "error");
         return;
     }
 
@@ -867,19 +862,47 @@ function spinViaAd() {
     const spinAdButton = buttons[5];
 
     spinAdButton.disabled = true;
-    spinAdButton.innerText = "Opening...";
+    spinAdButton.innerText = "Loading Ad...";
 
-    const spinAdLink = "https://example.com";
+    try {
 
-    state.spinAdStartTime = Date.now();
-    state.spinAdPending = true;
+        // 🔥 Monetag Rewarded Popup
+        await show_10659418('pop');
 
-    window.open(spinAdLink, "_blank");
+        // Ad completed → call backend spin route
+        const res = await fetch(`${API_BASE}/spin`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                telegram_id: currentUser.telegram_id,
+                spin_type: "ad"
+            })
+        });
 
-    setTimeout(() => {
-        spinAdButton.disabled = false;
-        spinAdButton.innerText = "Watch Ad for Spin";
-    }, 2000);
+        const data = await res.json();
+
+        if (data.success) {
+
+            state.coinBalance = data.newBalance;
+            updateBalance();
+
+            document.getElementById("spinResult").innerText =
+                "You won: " + data.reward + " coin!";
+
+            showToast("Spin reward added ✅", "success");
+
+        } else {
+            showToast(data.error || "Spin failed", "error");
+        }
+
+    } catch (e) {
+        showToast("Ad not completed!", "error");
+    }
+
+    spinAdButton.disabled = false;
+    spinAdButton.innerText = "Watch Ad for Spin";
 }
 
 
