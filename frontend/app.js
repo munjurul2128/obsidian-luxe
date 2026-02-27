@@ -543,10 +543,8 @@ async function watchAd() {
 
     try {
 
-        // 🔥 Monetag Rewarded Interstitial
         await show_10659418();
 
-        // Ad finished → call backend for reward
         const res = await fetch("/watch-ad", {
             method: "POST",
             headers: {
@@ -561,23 +559,44 @@ async function watchAd() {
         const data = await res.json();
 
         if (data.success) {
+
             showToast("Reward added ✅", "success");
 
             state.coinBalance = data.newBalance;
             updateBalance();
 
+            // 🔥 START 30s COOLDOWN
+            state.adCooldown = true;
+            state.adPending = false;
+
+            let cooldown = 30;
+
+            const interval = setInterval(() => {
+                cooldown--;
+                button.innerText = `Wait ${cooldown}s`;
+
+                if (cooldown <= 0) {
+                    clearInterval(interval);
+                    state.adCooldown = false;
+                    button.innerText = "Watch Now";
+                    button.disabled = false;
+                }
+
+            }, 1000);
 
         } else {
+            state.adPending = false;
+            button.disabled = false;
+            button.innerText = "Watch Now";
             showToast(data.error, "error");
         }
 
     } catch (err) {
+        state.adPending = false;
+        button.disabled = false;
+        button.innerText = "Watch Now";
         console.log("Ad skipped or failed");
     }
-
-    state.adPending = false;
-    button.disabled = false;
-    button.innerText = "Watch Now";
 }
 
 
