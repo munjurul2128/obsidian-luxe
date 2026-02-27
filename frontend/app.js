@@ -1093,29 +1093,17 @@ function generateRefCode() {
     return "REF" + Math.floor(Math.random() * 1000000);
 }
 
-function initReferral() {
 
-    if (!localStorage.getItem("refCode")) {
-        const newCode = generateRefCode();
-        localStorage.setItem("refCode", newCode);
-    }
-
-    state.refCode = localStorage.getItem("refCode");
-
-    document.getElementById("refCodeText").innerText =
-        state.refCode;
-
-    renderReferralUI();
-}
 
 function copyRefLink() {
 
-    if (!state.refCode) {
+    if (!currentUser || !currentUser.referral_code) {
         showToast("Referral code not loaded yet.", "error");
         return;
     }
 
-    const link = `https://t.me/obsidianluxebot?start=${state.refCode}`;
+    const link =
+        `https://t.me/obsidianluxebot?start=${currentUser.referral_code}`;
 
     navigator.clipboard.writeText(link);
 
