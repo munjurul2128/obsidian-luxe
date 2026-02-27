@@ -33,10 +33,7 @@ async function telegramLogin() {
     const data = await res.json();
 
     if (data.success) {
-        currentUser = {
-            telegram_id: data.telegram_id,
-            username: data.username
-        };
+        currentUser = data;   // 🔥 full user object
 
         console.log("Telegram Auth Success:", currentUser);
     } else {
@@ -1235,40 +1232,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         return;
     }
 
-    // After telegram auth → call /auth route
-    const tg = window.Telegram.WebApp;
-
-    // 🔥 Get referral code from Telegram start param
-    // 🔥 Get referral code from Telegram initData (production safe)
-
-    let startParam = null;
-
-    if (tg.initData) {
-        const params = new URLSearchParams(tg.initData);
-        startParam = params.get("start_param");
-    }
-
-    console.log("Referral Start Param:", startParam);
-
-    const res = await fetch(`${API_BASE}/auth`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            telegram_id: currentUser.telegram_id,
-            username: currentUser.username,
-            referral_code: startParam
-        })
-    });
-
-    const data = await res.json();
-
-    if (!data.user) {
-        alert("Auth failed");
-        return;
-    }
-
-    currentUser = data.user;
-
     state.coinBalance = currentUser.coin_balance;
     state.cashBalance = currentUser.cash_balance || 0;
     state.tapPower = 1;
@@ -1428,7 +1391,6 @@ function renderLoginGridBackend(currentDay) {
         grid.appendChild(div);
     }
 }
-
 
 
 

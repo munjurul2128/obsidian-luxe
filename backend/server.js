@@ -214,11 +214,15 @@ app.post("/auth/telegram", async (req, res) => {
 
             if (referrer && referrer.telegram_id !== telegramId) {
 
+                await supabase.rpc("increment_coin", {
+                    user_telegram_id: referrer.telegram_id,
+                    amount_to_add: 1000
+                });
+
                 await supabase
                     .from("users")
                     .update({
-                        coin_balance: referrer.coin_balance + 1000,
-                        total_ref_earned: referrer.total_ref_earned + 1000
+                        total_ref_earned: (referrer.total_ref_earned || 0) + 1000
                     })
                     .eq("id", referrer.id);
 
@@ -234,10 +238,15 @@ app.post("/auth/telegram", async (req, res) => {
         }
     }
 
+    const { data: fullUser } = await supabase
+        .from("users")
+        .select("*")
+        .eq("telegram_id", telegramId)
+        .single();
+
     res.json({
         success: true,
-        telegram_id: telegramId,
-        username
+        ...fullUser
     });
 });
 
@@ -246,172 +255,6 @@ app.post("/auth/telegram", async (req, res) => {
 
 // AUTH ROUTE
 
-app.post("/auth", async (req, res) => {
-    const { telegram_id, username, referral_code } = req.body;
-
-    console.log("AUTH HIT");
-    console.log("TELEGRAM ID:", telegram_id);
-    console.log("REF CODE RECEIVED:", referral_code);
-
-    console.log("AUTH ROUTE HIT:", telegram_id);
-
-    if (!telegram_id) {
-        return res.status(400).json({ error: "Telegram ID required" });
-    }
-
-    // Check existing user
-    const { data: existingUser } =
-        await supabase
-            .from("users")
-            .select("*")
-            .eq("telegram_id", telegram_id)
-            .single();
-
-    if (existingUser) {
-
-        // 🔥 Ensure referral_code always exists
-        if (!existingUser.referral_code) {
-
-            const generatedCode = "REF" + Math.floor(Math.random() * 1000000);
-
-            const { data: updatedUser } = await supabase
-                .from("users")
-                .update({ referral_code: generatedCode })
-                .eq("telegram_id", telegram_id)
-                .select()
-                .single();
-
-            return res.json({ user: updatedUser });
-        }
-
-
-        const today = new Date();
-        const todayStr = today.toISOString().split("T")[0];
-
-        const dbDate = existingUser.last_reset_date
-            ? new Date(existingUser.last_reset_date)
-            : null;
-
-        const dbDateStr = dbDate
-            ? dbDate.toISOString().split("T")[0]
-            : null;
-
-        console.log("TODAY:", todayStr);
-        console.log("DB DATE:", dbDateStr);
-
-        if (!dbDateStr || dbDateStr !== todayStr) {
-
-            const { data: updatedUser, error } = await supabase
-                .from("users")
-                .update({
-                    daily_tap_count: 0,
-                    daily_ad_count: 0,
-                    daily_shortlink_count: 0,
-                    last_reset_date: todayStr
-                })
-                .eq("id", existingUser.id)
-                .select()
-                .single();
-
-            return res.json({ user: updatedUser });
-        }
-
-        return res.json({ user: existingUser });
-    }
-
-    // Generate referral code
-    const newRefCode =
-        "REF" + Math.floor(Math.random() * 1000000);
-
-    // Create new user (200 coin bonus
-
-    console.log("INSERT OBJECT:", {
-        telegram_id,
-        login_start_date: new Date()
-    });
-
-
-
-    const { data: newUser, error: insertError } =
-        await supabase
-            .from("users")
-            .insert([
-                {
-                    telegram_id,
-                    username,
-                    coin_balance: 200,
-                    tap_power: 1,
-                    referral_code: newRefCode,
-                    referred_by: referral_code || null,
-                    login_start_date: new Date().toDateString().split("T")[0],
-                    login_claimed_days: [],
-                }
-            ])
-            .select()
-            .single();
-
-    if (insertError) {
-        return res.status(500).json({ error: insertError.message });
-    }
-
-    // If referral code provided → reward referrer
-    // If referral code provided → reward referrer
-    if (referral_code) {
-
-        console.log("REFERRAL BLOCK ENTERED");
-
-        const { data: referrer } = await supabase
-            .from("users")
-            .select("*")
-            .eq("referral_code", referral_code)
-            .single();
-
-        if (referrer && Number(referrer.telegram_id) !== Number(telegram_id)) {
-
-            // Prevent duplicate referral
-            const { data: existingReferral } = await supabase
-                .from("referrals")
-                .select("*")
-                .eq("referred_user_id", newUser.id)
-                .maybeSingle();
-
-            if (!existingReferral) {
-
-                // 🔥 Add 1000 coin to referrer
-                await supabase
-                    .from("users")
-                    .update({
-                        coin_balance: referrer.coin_balance + 1000,
-                        total_ref_earned: referrer.total_ref_earned + 1000
-                    })
-                    .eq("id", referrer.id);
-
-                // Insert referral record
-                await supabase
-                    .from("referrals")
-                    .insert([
-                        {
-                            referrer_id: referrer.id,
-                            referred_user_id: newUser.id
-                        }
-                    ]);
-
-                // Transaction log
-                await supabase
-                    .from("transactions")
-                    .insert([
-                        {
-                            user_id: referrer.id,
-                            type: "referral_bonus",
-                            amount: 1000
-                        }
-                    ]);
-            }
-        }
-    }
-
-    res.json({ user: newUser });
-});
 
 
 // ==========================
@@ -713,6 +556,11 @@ app.post("/watch-ad", checkMaintenance, checkUserSuspended, userRateLimiter, asy
         .eq("telegram_id", telegram_id)
         .single();
 
+    if (!user) {
+        return res.status(404).json({ error: "User not found" });
+    }
+
+
     // Cooldown check (30 sec)
     if (user.last_ad_watch) {
         const lastWatch = new Date(user.last_ad_watch);
@@ -724,12 +572,6 @@ app.post("/watch-ad", checkMaintenance, checkUserSuspended, userRateLimiter, asy
                 error: "Please wait before watching another ad"
             });
         }
-    }
-
-
-
-    if (!user) {
-        return res.status(404).json({ error: "User not found" });
     }
 
     const adLimit = await getSetting("ad_daily_limit");
