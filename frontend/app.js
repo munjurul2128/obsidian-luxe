@@ -645,6 +645,7 @@ async function claimDailyBonus() {
 
 // ShortLink
 
+
 async function openShortlink() {
 
     if (!currentUser) {
@@ -653,7 +654,7 @@ async function openShortlink() {
     }
 
     if (state.shortlinkCooldown || state.shortlinkPending) {
-        showToast("Please wait before opening another shortlink", "error");
+        showToast("Please wait before next ad", "error");
         return;
     }
 
@@ -663,55 +664,55 @@ async function openShortlink() {
     const shortlinkButton = buttons[3];
 
     shortlinkButton.disabled = true;
-    shortlinkButton.innerText = "Loading Ad...";
+    shortlinkButton.innerText = "Opening...";
 
     state.shortlinkPending = true;
+    state.shortlinkStartTime = Date.now();
 
     try {
 
-        // 🔥 Monetag Rewarded Popup
-        await show_10659418('pop');
+        // ✅ SAME STYLE AS WATCH AD
+        await show_10659418();
 
-        // Ad completed successfully → call backend
+        const timeSpent =
+            (Date.now() - state.shortlinkStartTime) / 1000;
+
+        if (timeSpent < 20) {
+            showToast("You must watch at least 20 seconds!", "error");
+            state.shortlinkPending = false;
+            shortlinkButton.disabled = false;
+            shortlinkButton.innerText = "Open Shortlink";
+            return;
+        }
 
         const res = await fetch(`${API_BASE}/shortlink`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 telegram_id: currentUser.telegram_id,
-                timeSpent: 20 // backend validation pass
+                timeSpent: timeSpent
             })
         });
 
         const data = await res.json();
 
         if (data.success) {
-
             state.coinBalance = data.newBalance;
             updateBalance();
-
-            showToast("+80 Coin Added ✅", "success");
-
+            showToast("+80 Coin Added", "success");
             startShortlinkCooldown(30);
-
         } else {
             showToast(data.error, "error");
         }
 
     } catch (e) {
-
-        showToast("Ad not completed!", "error");
-
+        showToast("Ad failed!", "error");
     }
 
     state.shortlinkPending = false;
-
     shortlinkButton.disabled = false;
     shortlinkButton.innerText = "Open Shortlink";
 }
-
 
 
 // Spin System
@@ -856,25 +857,41 @@ async function spinViaAd() {
         return;
     }
 
+    if (state.spinAdPending) {
+        showToast("Please wait before next ad", "error");
+        return;
+    }
+
     const buttons =
         document.querySelectorAll("#earnPage .card button");
 
     const spinAdButton = buttons[5];
 
     spinAdButton.disabled = true;
-    spinAdButton.innerText = "Loading Ad...";
+    spinAdButton.innerText = "Opening...";
+
+    state.spinAdPending = true;
+    state.spinAdStartTime = Date.now();
 
     try {
 
-        // 🔥 Monetag Rewarded Popup
-        await show_10659418('pop');
+        // ✅ SAME STYLE AS WATCH AD
+        await show_10659418();
 
-        // Ad completed → call backend spin route
+        const timeSpent =
+            (Date.now() - state.spinAdStartTime) / 1000;
+
+        if (timeSpent < 20) {
+            showToast("You must watch at least 20 seconds!", "error");
+            state.spinAdPending = false;
+            spinAdButton.disabled = false;
+            spinAdButton.innerText = "Watch Ad for Spin";
+            return;
+        }
+
         const res = await fetch(`${API_BASE}/spin`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 telegram_id: currentUser.telegram_id,
                 spin_type: "ad"
@@ -884,27 +901,53 @@ async function spinViaAd() {
         const data = await res.json();
 
         if (data.success) {
-
             state.coinBalance = data.newBalance;
             updateBalance();
-
             document.getElementById("spinResult").innerText =
                 "You won: " + data.reward + " coin!";
-
-            showToast("Spin reward added ✅", "success");
-
+            startSpinAdCooldown(30);
         } else {
-            showToast(data.error || "Spin failed", "error");
+            showToast(data.error, "error");
         }
 
     } catch (e) {
-        showToast("Ad not completed!", "error");
+        showToast("Ad failed!", "error");
     }
 
+    state.spinAdPending = false;
     spinAdButton.disabled = false;
     spinAdButton.innerText = "Watch Ad for Spin";
 }
 
+
+function startSpinAdCooldown(seconds) {
+
+    state.spinAdCooldown = true;
+
+    const buttons =
+        document.querySelectorAll("#earnPage .card button");
+
+    const spinAdButton = buttons[5];
+
+    let remaining = seconds;
+
+    spinAdButton.disabled = true;
+
+    const timer = setInterval(() => {
+
+        spinAdButton.innerText = `Wait ${remaining}s`;
+
+        remaining--;
+
+        if (remaining < 0) {
+            clearInterval(timer);
+            state.spinAdCooldown = false;
+            spinAdButton.disabled = false;
+            spinAdButton.innerText = "Watch Ad for Spin";
+        }
+
+    }, 1000);
+}
 
 
 let currentAngle = 0;
