@@ -179,15 +179,59 @@ app.post("/auth/telegram", async (req, res) => {
         .eq("telegram_id", telegramId)
         .single();
 
+    // 🔥 Get referral start_param
+    const startParam = parsed.get("start_param");
+    console.log("START PARAM:", startParam);
+
     if (!existingUser) {
-        await supabase.from("users").insert([
-            {
-                telegram_id: telegramId,
-                username: username,
-                coin_balance: 0,
-                cash_balance: 0
+
+        const newRefCode = "REF" + Math.floor(100000 + Math.random() * 900000);
+
+        // ✅ Create new user with 200 signup coin
+        const { data: newUser } = await supabase
+            .from("users")
+            .insert([
+                {
+                    telegram_id: telegramId,
+                    username: username,
+                    coin_balance: 200,
+                    cash_balance: 0,
+                    referral_code: newRefCode,
+                    referred_by: startParam || null
+                }
+            ])
+            .select()
+            .single();
+
+        // 🎁 If referral used → reward referrer
+        if (startParam) {
+
+            const { data: referrer } = await supabase
+                .from("users")
+                .select("*")
+                .eq("referral_code", startParam)
+                .single();
+
+            if (referrer && referrer.telegram_id !== telegramId) {
+
+                await supabase
+                    .from("users")
+                    .update({
+                        coin_balance: referrer.coin_balance + 1000,
+                        total_ref_earned: referrer.total_ref_earned + 1000
+                    })
+                    .eq("id", referrer.id);
+
+                await supabase
+                    .from("referrals")
+                    .insert([
+                        {
+                            referrer_id: referrer.id,
+                            referred_user_id: newUser.id
+                        }
+                    ]);
             }
-        ]);
+        }
     }
 
     res.json({
