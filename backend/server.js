@@ -13,6 +13,12 @@ const supabase = require("./config/supabase");
 console.log("🔥 THIS IS THE REAL SERVER FILE 🔥");
 console.log("🚨 REAL SERVER FILE LOADED 🚨");
 
+const TelegramBot = require("node-telegram-bot-api");
+
+const bot = new TelegramBot(process.env.BOT_TOKEN, {
+    polling: true
+});
+
 // ==========================
 // USER BASED RATE LIMIT
 // ==========================
@@ -1990,6 +1996,53 @@ app.get("/settings/public", async (req, res) => {
     });
 
     res.json(result);
+});
+
+
+
+
+bot.onText(/\/start (.+)/, async (msg, match) => {
+
+    const chatId = msg.chat.id;
+    const referralCode = match[1];
+
+    console.log("Bot Start With Referral:", referralCode);
+
+    bot.sendMessage(chatId, "Welcome to Obsidian Luxe!", {
+        reply_markup: {
+            inline_keyboard: [
+                [
+                    {
+                        text: "🚀 Open App",
+                        web_app: {
+                            url: `https://obsidianluxebd.com/?start=${referralCode}`
+                        }
+                    }
+                ]
+            ]
+        }
+    });
+});
+
+
+bot.onText(/\/start$/, (msg) => {
+
+    const chatId = msg.chat.id;
+
+    bot.sendMessage(chatId, "Welcome!", {
+        reply_markup: {
+            inline_keyboard: [
+                [
+                    {
+                        text: "🚀 Open App",
+                        web_app: {
+                            url: "https://obsidianluxebd.com"
+                        }
+                    }
+                ]
+            ]
+        }
+    });
 });
 
 
