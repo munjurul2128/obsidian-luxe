@@ -300,16 +300,13 @@ app.post("/auth", async (req, res) => {
                 .eq("referral_code", referral_code)
                 .single();
 
-        if (referrer) {
+        if (referrer && referrer.telegram_id !== telegram_id) {
 
-
-            // 🔐 Atomic referral bonus (1000 coin)
             await supabase.rpc("increment_coin", {
                 user_telegram_id: referrer.telegram_id,
                 amount_to_add: 1000
             });
 
-            // Insert referral relation
             await supabase
                 .from("referrals")
                 .insert([
@@ -319,7 +316,6 @@ app.post("/auth", async (req, res) => {
                     }
                 ]);
 
-            // Log transaction
             await supabase
                 .from("transactions")
                 .insert([
