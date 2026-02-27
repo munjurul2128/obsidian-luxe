@@ -20,6 +20,8 @@ console.log("🚨 REAL SERVER FILE LOADED 🚨");
 
 const app = express();
 
+const app = express();
+app.set('trust proxy', 1);   // 🔥 Render proxy fix
 
 // ==========================
 // TELEGRAM AUTH VERIFY
