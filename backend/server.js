@@ -28,7 +28,7 @@ const app = express();
 function verifyTelegramAuth(initData, botToken) {
 
     const secret = crypto
-        .createHash("sha256")
+        .createHmac("sha256", "WebAppData")
         .update(botToken)
         .digest();
 
