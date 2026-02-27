@@ -204,6 +204,10 @@ app.post("/auth/telegram", async (req, res) => {
 app.post("/auth", async (req, res) => {
     const { telegram_id, username, referral_code } = req.body;
 
+    console.log("AUTH HIT");
+    console.log("TELEGRAM ID:", telegram_id);
+    console.log("REF CODE RECEIVED:", referral_code);
+
     console.log("AUTH ROUTE HIT:", telegram_id);
 
     if (!telegram_id) {
@@ -308,6 +312,8 @@ app.post("/auth", async (req, res) => {
     // If referral code provided → reward referrer
     // If referral code provided → reward referrer
     if (referral_code) {
+
+        console.log("REFERRAL BLOCK ENTERED");
 
         const { data: referrer } = await supabase
             .from("users")
