@@ -2114,27 +2114,7 @@ app.get("/settings/public", async (req, res) => {
 // ==========================
 
 
-async function seedAdmin() {
-    const { data: existing } = await supabase
-        .from("admins")
-        .select("*")
-        .eq("username", "admin")
-        .single();
 
-    if (!existing) {
-        const hash = await bcrypt.hash("admin123", 10);
-
-        await supabase.from("admins").insert([
-            {
-                username: "admin",
-                password: hash
-            }
-        ]);
-
-    }
-}
-
-seedAdmin();
 
 
 
