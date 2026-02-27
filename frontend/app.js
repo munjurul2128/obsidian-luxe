@@ -1220,6 +1220,14 @@ document.addEventListener("DOMContentLoaded", async function () {
         return;
     }
 
+    // 🔥 Get referral code from URL parameter
+    let startParam = null;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    startParam = urlParams.get("start");
+
+    console.log("Referral Start Param:", startParam);
+
     state.coinBalance = currentUser.coin_balance;
     state.cashBalance = currentUser.cash_balance || 0;
     state.tapPower = 1;
