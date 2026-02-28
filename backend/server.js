@@ -1898,10 +1898,9 @@ app.get("/monetag-postback", async (req, res) => {
     const { sub_id, status } = req.query;
 
     // Monetag only sends success on valid completion
-    if (!sub_id || status !== "success") {
-        return res.send("Ignored");
+    if (!sub_id) {
+        return res.send("No sub_id");
     }
-
     const telegram_id = sub_id;
 
     const { data: user } = await supabase
