@@ -1895,12 +1895,12 @@ app.get("/settings/public", async (req, res) => {
 
 app.get("/monetag-postback", async (req, res) => {
 
-    const { sub_id, status } = req.query;
+    const { sub_id, event } = req.query;
 
-    // Monetag only sends success on valid completion
     if (!sub_id) {
         return res.send("No sub_id");
     }
+
     const telegram_id = sub_id;
 
     const { data: user } = await supabase
@@ -1913,7 +1913,7 @@ app.get("/monetag-postback", async (req, res) => {
         return res.send("User not found");
     }
 
-    // Cooldown protection
+    // 30 sec cooldown
     if (user.last_ad_watch) {
         const lastWatch = new Date(user.last_ad_watch);
         const now = new Date();
@@ -1924,7 +1924,17 @@ app.get("/monetag-postback", async (req, res) => {
         }
     }
 
-    const reward = 75;
+    let reward = 75; // default Watch Ad
+
+    if (event === "shortlink") {
+        reward = 80;
+    }
+
+    if (event === "spin") {
+
+        const spinRewards = [10,75,40,15,100,20,65,150,0,90,55,30,70,85,200];
+        reward = spinRewards[Math.floor(Math.random() * spinRewards.length)];
+    }
 
     await supabase.rpc("increment_coin", {
         user_telegram_id: telegram_id,
@@ -1941,13 +1951,11 @@ app.get("/monetag-postback", async (req, res) => {
 
     await supabase
         .from("transactions")
-        .insert([
-            {
-                user_id: user.id,
-                type: "ad",
-                amount: reward
-            }
-        ]);
+        .insert([{
+            user_id: user.id,
+            type: event || "ad",
+            amount: reward
+        }]);
 
     res.send("Reward added");
 });

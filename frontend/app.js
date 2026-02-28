@@ -412,9 +412,9 @@ async function watchAd() {
     try {
 
         // 🔥 Pass Telegram ID as sub_id
-        await show_10659418({
-            sub_id: currentUser.telegram_id
-        });
+        window.sub_id = currentUser.telegram_id;
+
+        await show_10659418();
 
         showToast("Ad completed! Reward processing...", "success");
 
@@ -498,30 +498,13 @@ async function openShortlink() {
 
     try {
 
+        window.sub_id = currentUser.telegram_id;
+
         await show_10659418();
 
-        const res = await fetch("/shortlink", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                telegram_id: currentUser.telegram_id,
-                timeSpent: 25
-            })
-        });
+        showToast("Ad completed! Reward processing...", "success");
 
-        const data = await res.json();
-
-        if (data.success) {
-
-            state.coinBalance = data.newBalance;
-            updateBalance();
-            showToast("+80 Coin Added", "success");
-
-            startShortlinkCooldown(30);
-
-        } else {
-            showToast(data.error, "error");
-        }
+        startShortlinkCooldown(30);
 
     } catch (err) {
 
@@ -690,32 +673,13 @@ async function spinViaAd() {
 
     try {
 
+        window.sub_id = currentUser.telegram_id;
+
         await show_10659418();
 
-        const res = await fetch("/spin", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                telegram_id: currentUser.telegram_id,
-                spin_type: "ad"
-            })
-        });
+        showToast("Ad completed! Reward processing...", "success");
 
-        const data = await res.json();
-
-        if (data.success) {
-
-            state.coinBalance = data.newBalance;
-            updateBalance();
-
-            document.getElementById("spinResult").innerText =
-                "You won: " + data.reward + " coin!";
-
-            startSpinAdCooldown(30);
-
-        } else {
-            showToast(data.error, "error");
-        }
+        startSpinAdCooldown(30);
 
     } catch (err) {
 
@@ -727,6 +691,9 @@ async function spinViaAd() {
     spinAdButton.innerText = "Watch Ad for Spin";
 }
 
+
+
+// Start Spin Cooldown
 
 
 function startSpinAdCooldown(seconds) {
