@@ -567,7 +567,7 @@ app.post("/watch-ad", checkMaintenance, checkUserSuspended, userRateLimiter, asy
         return res.status(400).json({ error: "Telegram ID required" });
     }
 
-    if (!timeSpent || timeSpent < 20) {
+    if (!timeSpent || timeSpent < 15) {
         return res.status(400).json({ error: "Ad not viewed properly" });
     }
 
