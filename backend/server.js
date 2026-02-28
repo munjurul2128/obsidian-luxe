@@ -1525,7 +1525,7 @@ async function getBoolSetting(key) {
 
     if (!data) return false;
 
-    return data.value === "true";
+    return data.value == true || data.value === "true";
 }
 
 
