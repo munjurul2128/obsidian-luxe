@@ -15,9 +15,7 @@ console.log("🚨 REAL SERVER FILE LOADED 🚨");
 
 const TelegramBot = require("node-telegram-bot-api");
 
-const bot = new TelegramBot(process.env.BOT_TOKEN, {
-    polling: true
-});
+const bot = new TelegramBot(process.env.BOT_TOKEN);
 
 // ==========================
 // USER BASED RATE LIMIT
