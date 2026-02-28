@@ -560,128 +560,6 @@ app.post("/spin", checkMaintenance, checkUserSuspended, userRateLimiter, async (
 // ==========================
 // WATCH AD ROUTE BACKEND
 // ==========================
-app.post("/watch-ad", checkMaintenance, checkUserSuspended, userRateLimiter, async (req, res) => {
-    const { telegram_id, timeSpent } = req.body;
-
-    if (!telegram_id) {
-        return res.status(400).json({ error: "Telegram ID required" });
-    }
-
-    if (!timeSpent || timeSpent < 15) {
-        return res.status(400).json({ error: "Ad not viewed properly" });
-    }
-
-    const { data: user } = await supabase
-        .from("users")
-        .select("*")
-        .eq("telegram_id", telegram_id)
-        .single();
-
-    if (!user) {
-        return res.status(404).json({ error: "User not found" });
-    }
-
-
-    // Cooldown check (30 sec)
-    if (user.last_ad_watch) {
-        const lastWatch = new Date(user.last_ad_watch);
-        const now = new Date();
-        const diff = (now - lastWatch) / 1000;
-
-        if (diff < 30) {
-            return res.status(400).json({
-                error: "Please wait before watching another ad"
-            });
-        }
-    }
-
-    const adLimit = await getSetting("ad_daily_limit");
-
-    if (user.daily_ad_count >= adLimit) {
-        return res.status(400).json({ error: "Daily ad limit reached" });
-    }
-
-    const reward = 75;
-
-    // 🔐 Atomic coin increment
-    await supabase.rpc("increment_coin", {
-        user_telegram_id: telegram_id,
-        amount_to_add: reward
-    });
-
-    // Update ad count + last watch time
-    await supabase
-        .from("users")
-        .update({
-            daily_ad_count: user.daily_ad_count + 1,
-            last_ad_watch: new Date().toISOString()
-        })
-        .eq("telegram_id", telegram_id);
-
-    await supabase
-        .from("transactions")
-        .insert([
-            {
-                user_id: user.id,
-                type: "ad",
-                amount: reward
-            }
-        ]);
-
-
-    // 1% referral income
-    if (user.referred_by) {
-
-        const { data: referrer } =
-            await supabase
-                .from("users")
-                .select("*")
-                .eq("referral_code", user.referred_by)
-                .single();
-
-        if (referrer) {
-
-            const referralReward =
-                Math.floor(reward * 0.01);
-
-            if (referralReward > 0) {
-
-                // 🔐 Atomic referral increment
-                await supabase.rpc("increment_coin", {
-                    user_telegram_id: referrer.telegram_id,
-                    amount_to_add: referralReward
-                });
-
-                await supabase
-                    .from("transactions")
-                    .insert([
-                        {
-                            user_id: referrer.id,
-                            type: "referral_income",
-                            amount: referralReward
-                        }
-                    ]);
-            }
-        }
-    }
-
-    const { data: updatedUser } =
-        await supabase
-            .from("users")
-            .select("coin_balance")
-            .eq("telegram_id", telegram_id)
-            .single();
-
-
-
-
-    res.json({
-        success: true,
-        reward,
-        newBalance: updatedUser.coin_balance
-    });
-});
-
 
 
 
@@ -2012,6 +1890,74 @@ app.get("/settings/public", async (req, res) => {
 
     res.json(result);
 });
+
+// ==========================
+// MONETAG POSTBACK ROUTE
+// ==========================
+
+app.get("/monetag-postback", async (req, res) => {
+
+    const { sub_id, status } = req.query;
+
+    // Monetag only sends success on valid completion
+    if (!sub_id || status !== "success") {
+        return res.send("Ignored");
+    }
+
+    const telegram_id = sub_id;
+
+    const { data: user } = await supabase
+        .from("users")
+        .select("*")
+        .eq("telegram_id", telegram_id)
+        .single();
+
+    if (!user) {
+        return res.send("User not found");
+    }
+
+    // Cooldown protection
+    if (user.last_ad_watch) {
+        const lastWatch = new Date(user.last_ad_watch);
+        const now = new Date();
+        const diff = (now - lastWatch) / 1000;
+
+        if (diff < 30) {
+            return res.send("Cooldown active");
+        }
+    }
+
+    const reward = 75;
+
+    await supabase.rpc("increment_coin", {
+        user_telegram_id: telegram_id,
+        amount_to_add: reward
+    });
+
+    await supabase
+        .from("users")
+        .update({
+            daily_ad_count: user.daily_ad_count + 1,
+            last_ad_watch: new Date().toISOString()
+        })
+        .eq("telegram_id", telegram_id);
+
+    await supabase
+        .from("transactions")
+        .insert([
+            {
+                user_id: user.id,
+                type: "ad",
+                amount: reward
+            }
+        ]);
+
+    res.send("Reward added");
+});
+
+
+
+
 
 
 

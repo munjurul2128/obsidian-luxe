@@ -411,32 +411,14 @@ async function watchAd() {
 
     try {
 
-        // 🔥 Monetag Rewarded Interstitial
-        await show_10659418();
-
-        // ✅ Only after ad completed
-        const res = await fetch("/watch-ad", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                telegram_id: currentUser.telegram_id,
-                timeSpent: 25
-            })
+        // 🔥 Pass Telegram ID as sub_id
+        await show_10659418({
+            sub_id: currentUser.telegram_id
         });
 
-        const data = await res.json();
+        showToast("Ad completed! Reward processing...", "success");
 
-        if (data.success) {
-
-            state.coinBalance = data.newBalance;
-            updateBalance();
-            showToast("+75 Coin Added", "success");
-
-            startAdCooldown(30);
-
-        } else {
-            showToast(data.error, "error");
-        }
+        startAdCooldown(30);
 
     } catch (err) {
 
