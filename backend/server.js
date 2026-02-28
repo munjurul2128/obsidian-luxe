@@ -232,6 +232,21 @@ app.post("/auth/telegram", async (req, res) => {
                     })
                     .eq("id", referrer.id);
 
+
+                // 🔥 রেফারেল বোনাসের ট্রানজেকশন যোগ করা
+                await supabase
+                    .from("transactions")
+                    .insert([
+                        {
+                            user_id: referrer.id,
+                            type: "referral_income",
+                            amount: 1000
+                        }
+                    ]);
+
+
+
+
                 await supabase
                     .from("referrals")
                     .insert([
