@@ -158,23 +158,7 @@ let state = {
 
 const spinRewards = [10, 75, 40, 15, 100, 20, 65, 150, 0, 90, 55, 30, 70, 85, 200];
 
-function loadMonetagSDK(telegramId) {
-    return new Promise((resolve) => {
 
-        // পুরনো SDK থাকলে remove
-        const oldScript = document.querySelector("script[data-sdk]");
-        if (oldScript) oldScript.remove();
-
-        const script = document.createElement("script");
-        script.src = "//libtl.com/sdk.js";
-        script.setAttribute("data-zone", "10659418");
-        script.setAttribute("data-sdk", "show_10659418");
-        script.setAttribute("data-ymid", telegramId.toString());
-
-        script.onload = () => resolve();
-        document.body.appendChild(script);
-    });
-}
 
 
 // =============================
@@ -407,9 +391,10 @@ async function convertCoin() {
 
 
 
-// Watch Ad
+// Universal watch ad/ shortlink/ spin ad
 
-async function watchAd() {
+
+async function playRewardedAd(adType, button, cooldownFn) {
 
     if (!currentUser) {
         showToast("User not authenticated", "error");
@@ -421,116 +406,87 @@ async function watchAd() {
         return;
     }
 
-    const button =
-        document.querySelector("#earnPage .card:nth-child(1) button");
-
     button.disabled = true;
-    button.innerText = "Loading Ad...";
+    button.innerText = "Opening Ad...";
+
+    const startTime = Date.now();
 
     try {
 
-        // 🔥 Pass Telegram ID as sub_id
-        await loadMonetagSDK(currentUser.telegram_id);
-        await show_10659418();
+        await show_10659418('pop');
 
-        showToast("Ad completed! Reward processing...", "success");
+        const timeSpent =
+            Math.floor((Date.now() - startTime) / 1000);
 
-        startAdCooldown(30);
+        if (timeSpent < 20) {
+            showToast("Ad not completed!", "error");
+            button.disabled = false;
+            button.innerText = "Try Again";
+            return;
+        }
+
+        const res = await fetch(`${API_BASE}/rewarded-ad`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                telegram_id: currentUser.telegram_id,
+                ad_type: adType,
+                timeSpent
+            })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+
+            state.coinBalance = data.newBalance;
+            updateBalance();
+
+            if (adType === "spin") {
+                showToast("Spin reward: +" + data.reward + " coin", "success");
+            } else {
+                showToast("Reward added: +" + data.reward + " coin", "success");
+            }
+
+            cooldownFn(30);
+
+        } else {
+            showToast(data.error, "error");
+        }
 
     } catch (err) {
-
-        showToast("Ad not completed!", "error");
-
+        showToast("Ad failed!", "error");
     }
 
     button.disabled = false;
     button.innerText = "Watch Now";
 }
 
-// Daily Bonus
 
-async function claimDailyBonus() {
 
-    if (!currentUser) {
-        showToast("User not authenticated", "error");
-        return;
-    }
 
-    const button =
-        document.querySelector("#earnPage .card:nth-child(3) button");
 
-    button.disabled = true;
-    button.innerText = "Processing...";
 
-    const res = await fetch(`${API_BASE}/daily-bonus`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            telegram_id: currentUser.telegram_id
-        })
-    });
+// Watch Ad
 
-    const data = await res.json();
 
-    if (data.success) {
-
-        state.coinBalance = data.newBalance;
-        updateBalance();
-
-        showToast("Daily bonus claimed! +" + data.reward + " coin", "success");
-
-    } else {
-        showToast(data.error, "error");
-    }
-
-    button.disabled = false;
-    button.innerText = "Claim";
+function watchAd() {
+    const button = document.querySelector("#earnPage .card:nth-child(1) button");
+    playRewardedAd("watch", button, startAdCooldown);
 }
 
 
 // ShortLink
 
-
-async function openShortlink() {
-
-    if (!currentUser) {
-        showToast("User not authenticated", "error");
-        return;
-    }
-
-    if (state.shortlinkCooldown) {
-        showToast("Please wait before next ad", "error");
-        return;
-    }
-
-    const buttons =
-        document.querySelectorAll("#earnPage .card button");
-
-    const shortlinkButton = buttons[3];
-
-    shortlinkButton.disabled = true;
-    shortlinkButton.innerText = "Loading Ad...";
-
-    try {
-
-        await loadMonetagSDK(currentUser.telegram_id);
-        await show_10659418();
-
-        showToast("Ad completed! Reward processing...", "success");
-
-        startShortlinkCooldown(30);
-
-    } catch (err) {
-
-        showToast("Ad not completed!", "error");
-
-    }
-
-    shortlinkButton.disabled = false;
-    shortlinkButton.innerText = "Open Shortlink";
+function openShortlink() {
+    const buttons = document.querySelectorAll("#earnPage .card button");
+    const button = buttons[3];
+    playRewardedAd("shortlink", button, startShortlinkCooldown);
 }
+
+
 
 // Spin System
 
@@ -667,45 +623,11 @@ async function spinWheel() {
 
 // Spin For Ads
 
-async function spinViaAd() {
-
-    if (!currentUser) {
-        showToast("User not authenticated", "error");
-        return;
-    }
-
-    if (state.spinAdCooldown) {
-        showToast("Please wait before next ad", "error");
-        return;
-    }
-
-    const buttons =
-        document.querySelectorAll("#earnPage .card button");
-
-    const spinAdButton = buttons[5];
-
-    spinAdButton.disabled = true;
-    spinAdButton.innerText = "Loading Ad...";
-
-    try {
-
-        await loadMonetagSDK(currentUser.telegram_id);
-        await show_10659418();
-
-        showToast("Ad completed! Reward processing...", "success");
-
-        startSpinAdCooldown(30);
-
-    } catch (err) {
-
-        showToast("Ad not completed!", "error");
-
-    }
-
-    spinAdButton.disabled = false;
-    spinAdButton.innerText = "Watch Ad for Spin";
+function spinViaAd() {
+    const buttons = document.querySelectorAll("#earnPage .card button");
+    const button = buttons[5];
+    playRewardedAd("spin", button, startSpinAdCooldown);
 }
-
 
 
 // Start Spin Cooldown

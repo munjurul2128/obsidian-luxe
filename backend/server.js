@@ -1890,20 +1890,19 @@ app.get("/settings/public", async (req, res) => {
 });
 
 // ==========================
-// MONETAG POSTBACK ROUTE
+// UNIVERSAL REWARDED AD ROUTE
 // ==========================
+app.post("/rewarded-ad", checkMaintenance, checkUserSuspended, userRateLimiter, async (req, res) => {
 
-app.get("/monetag-postback", async (req, res) => {
+    const { telegram_id, ad_type, timeSpent } = req.body;
 
-    console.log("🔥 Monetag Postback:", req.query);
-
-    const { sub_id } = req.query;
-
-    if (!sub_id || sub_id === "{subid}") {
-        return res.send("Invalid sub_id");
+    if (!telegram_id || !ad_type) {
+        return res.status(400).json({ error: "Invalid request" });
     }
 
-    const telegram_id = sub_id;
+    if (!timeSpent || timeSpent < 20) {
+        return res.status(400).json({ error: "Ad not completed properly" });
+    }
 
     const { data: user } = await supabase
         .from("users")
@@ -1912,46 +1911,74 @@ app.get("/monetag-postback", async (req, res) => {
         .single();
 
     if (!user) {
-        return res.send("User not found");
+        return res.status(404).json({ error: "User not found" });
     }
 
     // 30 sec cooldown
     if (user.last_ad_watch) {
-        const lastWatch = new Date(user.last_ad_watch);
-        const now = new Date();
-        const diff = (now - lastWatch) / 1000;
-
+        const diff = (new Date() - new Date(user.last_ad_watch)) / 1000;
         if (diff < 30) {
-            return res.send("Cooldown active");
+            return res.status(400).json({ error: "Please wait before next ad" });
         }
     }
 
-    const reward = 75;
+    let reward = 0;
 
-    await supabase.rpc("increment_coin", {
-        user_telegram_id: telegram_id,
-        amount_to_add: reward
-    });
+    if (ad_type === "watch") reward = 75;
+    if (ad_type === "shortlink") reward = 80;
+    if (ad_type === "spin") reward = 0; // spin reward handled separately
+
+    // Spin via ad → call existing spin logic
+    if (ad_type === "spin") {
+
+        const spinRewards = [10, 75, 40, 15, 100, 20, 65, 150, 0, 90, 55, 30, 70, 85, 200];
+
+        reward = spinRewards[Math.floor(Math.random() * spinRewards.length)];
+
+        await supabase.rpc("increment_coin", {
+            user_telegram_id: telegram_id,
+            amount_to_add: reward
+        });
+
+        await supabase.from("transactions").insert([{
+            user_id: user.id,
+            type: "spin",
+            amount: reward
+        }]);
+    } else {
+
+        await supabase.rpc("increment_coin", {
+            user_telegram_id: telegram_id,
+            amount_to_add: reward
+        });
+
+        await supabase.from("transactions").insert([{
+            user_id: user.id,
+            type: ad_type,
+            amount: reward
+        }]);
+    }
 
     await supabase
         .from("users")
         .update({
-            daily_ad_count: user.daily_ad_count + 1,
             last_ad_watch: new Date().toISOString()
         })
         .eq("telegram_id", telegram_id);
 
-    await supabase
-        .from("transactions")
-        .insert([{
-            user_id: user.id,
-            type: "ad",
-            amount: reward
-        }]);
+    const { data: updatedUser } =
+        await supabase
+            .from("users")
+            .select("coin_balance")
+            .eq("telegram_id", telegram_id)
+            .single();
 
-    res.send("Reward added");
+    res.json({
+        success: true,
+        reward,
+        newBalance: updatedUser.coin_balance
+    });
 });
-
 
 
 
