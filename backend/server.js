@@ -1895,12 +1895,12 @@ app.get("/settings/public", async (req, res) => {
 
 app.get("/monetag-postback", async (req, res) => {
 
-    console.log("Postback received:", req.query);
+    console.log("🔥 Monetag Postback:", req.query);
 
-    const { sub_id, event } = req.query;
+    const { sub_id } = req.query;
 
-    if (!sub_id) {
-        return res.send("No sub_id");
+    if (!sub_id || sub_id === "{subid}") {
+        return res.send("Invalid sub_id");
     }
 
     const telegram_id = sub_id;
@@ -1926,17 +1926,7 @@ app.get("/monetag-postback", async (req, res) => {
         }
     }
 
-    let reward = 75; // default Watch Ad
-
-    if (event === "shortlink") {
-        reward = 80;
-    }
-
-    if (event === "spin") {
-
-        const spinRewards = [10,75,40,15,100,20,65,150,0,90,55,30,70,85,200];
-        reward = spinRewards[Math.floor(Math.random() * spinRewards.length)];
-    }
+    const reward = 75;
 
     await supabase.rpc("increment_coin", {
         user_telegram_id: telegram_id,
@@ -1955,14 +1945,12 @@ app.get("/monetag-postback", async (req, res) => {
         .from("transactions")
         .insert([{
             user_id: user.id,
-            type: event || "ad",
+            type: "ad",
             amount: reward
         }]);
 
     res.send("Reward added");
 });
-
-
 
 
 
