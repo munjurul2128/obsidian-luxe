@@ -1895,6 +1895,8 @@ app.get("/settings/public", async (req, res) => {
 
 app.get("/monetag-postback", async (req, res) => {
 
+    console.log("Postback received:", req.query);
+
     const { sub_id, event } = req.query;
 
     if (!sub_id) {
