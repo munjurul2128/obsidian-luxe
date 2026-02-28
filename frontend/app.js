@@ -390,6 +390,33 @@ async function convertCoin() {
 }
 
 
+async function claimDailyBonus() {
+
+    if (!currentUser) {
+        showToast("User not authenticated", "error");
+        return;
+    }
+
+    const res = await fetch(`${API_BASE}/daily-bonus`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            telegram_id: currentUser.telegram_id
+        })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+        state.coinBalance = data.newBalance;
+        updateBalance();
+        showToast("Daily bonus: +" + data.reward + " coin", "success");
+    } else {
+        showToast(data.error, "error");
+    }
+}
+
+
 
 // Universal watch ad/ shortlink/ spin ad
 

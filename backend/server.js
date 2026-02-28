@@ -1924,8 +1924,11 @@ app.post("/rewarded-ad", checkMaintenance, checkUserSuspended, userRateLimiter, 
 
     let reward = 0;
 
-    if (ad_type === "watch") reward = 75;
-    if (ad_type === "shortlink") reward = 80;
+    if (ad_type === "watch")
+        reward = await getSetting("watch_ad_reward") || 75;
+
+    if (ad_type === "shortlink")
+        reward = await getSetting("shortlink_reward") || 80;
     if (ad_type === "spin") reward = 0; // spin reward handled separately
 
     // Spin via ad → call existing spin logic
