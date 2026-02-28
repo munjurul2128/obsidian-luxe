@@ -412,8 +412,7 @@ async function watchAd() {
     try {
 
         // 🔥 Pass Telegram ID as sub_id
-        window.sub_id = currentUser.telegram_id;
-
+        window.monetag_subid = currentUser.telegram_id;
         await show_10659418();
 
         showToast("Ad completed! Reward processing...", "success");
@@ -498,8 +497,7 @@ async function openShortlink() {
 
     try {
 
-        window.sub_id = currentUser.telegram_id;
-
+        window.monetag_subid = currentUser.telegram_id;
         await show_10659418();
 
         showToast("Ad completed! Reward processing...", "success");
@@ -673,8 +671,7 @@ async function spinViaAd() {
 
     try {
 
-        window.sub_id = currentUser.telegram_id;
-
+        window.monetag_subid = currentUser.telegram_id;
         await show_10659418();
 
         showToast("Ad completed! Reward processing...", "success");
