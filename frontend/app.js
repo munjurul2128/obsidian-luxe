@@ -158,6 +158,24 @@ let state = {
 
 const spinRewards = [10, 75, 40, 15, 100, 20, 65, 150, 0, 90, 55, 30, 70, 85, 200];
 
+function loadMonetagSDK(telegramId) {
+    return new Promise((resolve) => {
+
+        // পুরনো SDK থাকলে remove
+        const oldScript = document.querySelector("script[data-sdk]");
+        if (oldScript) oldScript.remove();
+
+        const script = document.createElement("script");
+        script.src = "//libtl.com/sdk.js";
+        script.setAttribute("data-zone", "10659418");
+        script.setAttribute("data-sdk", "show_10659418");
+        script.setAttribute("data-ymid", telegramId.toString());
+
+        script.onload = () => resolve();
+        document.body.appendChild(script);
+    });
+}
+
 
 // =============================
 // TOAST SYSTEM
@@ -412,9 +430,8 @@ async function watchAd() {
     try {
 
         // 🔥 Pass Telegram ID as sub_id
-        await show_10659418({
-            ymid: currentUser.telegram_id.toString()
-        });
+        await loadMonetagSDK(currentUser.telegram_id);
+        await show_10659418();
 
         showToast("Ad completed! Reward processing...", "success");
 
@@ -498,9 +515,8 @@ async function openShortlink() {
 
     try {
 
-        await show_10659418({
-            ymid: currentUser.telegram_id.toString()
-        });
+        await loadMonetagSDK(currentUser.telegram_id);
+        await show_10659418();
 
         showToast("Ad completed! Reward processing...", "success");
 
@@ -673,9 +689,8 @@ async function spinViaAd() {
 
     try {
 
-        await show_10659418({
-            ymid: currentUser.telegram_id.toString()
-        });
+        await loadMonetagSDK(currentUser.telegram_id);
+        await show_10659418();
 
         showToast("Ad completed! Reward processing...", "success");
 
