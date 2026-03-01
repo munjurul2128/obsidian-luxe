@@ -21,10 +21,12 @@ const bot = new TelegramBot(process.env.BOT_TOKEN);
 // USER BASED RATE LIMIT
 // ==========================
 
-
 const app = express();
 
+
 app.set('trust proxy', 1);   // 🔥 Render proxy fix
+
+
 
 // ==========================
 // TELEGRAM AUTH VERIFY
