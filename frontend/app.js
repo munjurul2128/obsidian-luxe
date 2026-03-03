@@ -185,11 +185,18 @@ function showToast(message, type = "success") {
 // PAGE SWITCH
 // =============================
 
-function switchPage(pageId) {
+async function switchPage(pageId) {
+
     document.querySelectorAll(".page").forEach(page => {
         page.classList.remove("active");
     });
+
     document.getElementById(pageId).classList.add("active");
+
+    // 🔥 Reload limits when Earn page opens
+    if (pageId === "earnPage") {
+        await loadSettings();
+    }
 }
 
 // =============================
