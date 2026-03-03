@@ -758,6 +758,11 @@ function getLoginDayNumber() {
 
 function renderLoginGrid() {
 
+    if (!state.loginStartDate) {
+        document.getElementById("loginBonusCard").style.display = "none";
+        return;
+    }
+
     const grid = document.getElementById("loginGrid");
     grid.innerHTML = "";
 
@@ -818,6 +823,11 @@ async function claimLoginBonus() {
 
         state.coinBalance = data.newBalance;
         updateBalance();
+
+        state.loginClaimedDays.push(data.currentDay);
+        state.loginLastClaimDate = new Date().toISOString().split("T")[0];
+        renderLoginGrid();
+
 
         showToast(
             "Day " + data.currentDay +
@@ -969,6 +979,19 @@ document.addEventListener("DOMContentLoaded", async function () {
         alert("Telegram authentication failed");
         return;
     }
+
+    // ==========================
+    // LOGIN BONUS STATE SET
+    // ==========================
+
+    state.loginStartDate = currentUser.login_start_date;
+    state.loginLastClaimDate = currentUser.login_last_claim_date;
+    state.loginClaimedDays = currentUser.login_claimed_days || [];
+
+    if (state.loginStartDate) {
+        renderLoginGrid();
+    }
+
 
     // 🔥 Get referral code from URL parameter
     let startParam = null;
