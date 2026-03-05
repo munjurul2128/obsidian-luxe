@@ -445,57 +445,62 @@ async function playRewardedAd(adType, button, cooldownFn) {
 
     const startTime = Date.now();
 
-    try {
+    // Ad open
+    show_10659418('pop');
 
-        await show_10659418('pop');
+    // Detect when user returns to app
+    const handleVisibility = async () => {
 
-        const timeSpent =
-            Math.floor((Date.now() - startTime) / 1000);
+        if (document.visibilityState === "visible") {
 
-        if (timeSpent < 20) {
-            showToast("Ad not completed!", "error");
-            button.disabled = false;
-            button.innerText = "Try Again";
-            return;
-        }
+            document.removeEventListener("visibilitychange", handleVisibility);
 
-        const res = await fetch(`${API_BASE}/rewarded-ad`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                telegram_id: currentUser.telegram_id,
-                ad_type: adType,
-                timeSpent
-            })
-        });
+            const timeSpent =
+                Math.floor((Date.now() - startTime) / 1000);
 
-        const data = await res.json();
+            if (timeSpent < 20) {
 
-        if (data.success) {
-
-            state.coinBalance = data.newBalance;
-            updateBalance();
-
-            if (adType === "spin") {
-                showToast("Spin reward: +" + data.reward + " coin", "success");
-            } else {
-                showToast("Reward added: +" + data.reward + " coin", "success");
+                showToast("Ad not completed!", "error");
+                button.disabled = false;
+                button.innerText = "Try Again";
+                return;
             }
 
-            cooldownFn(30);
+            const res = await fetch(`${API_BASE}/rewarded-ad`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    telegram_id: currentUser.telegram_id,
+                    ad_type: adType,
+                    timeSpent
+                })
+            });
 
-        } else {
-            showToast(data.error, "error");
+            const data = await res.json();
+
+            if (data.success) {
+
+                state.coinBalance = data.newBalance;
+                updateBalance();
+
+                showToast("Reward +" + data.reward + " coin", "success");
+
+                cooldownFn(30);
+
+            } else {
+
+                showToast(data.error, "error");
+
+            }
+
+            button.disabled = false;
+            button.innerText = "Watch Now";
         }
+    };
 
-    } catch (err) {
-        showToast("Ad failed!", "error");
-    }
-
-    button.disabled = false;
-    button.innerText = "Watch Now";
+    document.addEventListener("visibilitychange", handleVisibility);
 }
 
 

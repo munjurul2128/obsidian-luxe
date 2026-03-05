@@ -304,6 +304,22 @@ app.post("/tap", checkMaintenance, checkUserSuspended, userRateLimiter, async (r
         .eq("telegram_id", telegram_id)
         .single();
 
+    // DAILY TAP RESET
+    const today = new Date().toISOString().split("T")[0];
+
+    if (user.last_tap_reset !== today) {
+
+        await supabase
+            .from("users")
+            .update({
+                daily_tap_count: 0,
+                last_tap_reset: today
+            })
+            .eq("telegram_id", telegram_id);
+
+        user.daily_tap_count = 0;
+    }
+
     if (!user) {
         return res.status(404).json({ error: "User not found" });
     }
@@ -1891,6 +1907,7 @@ app.get("/settings/public", async (req, res) => {
     res.json(result);
 });
 
+
 // ==========================
 // UNIVERSAL REWARDED AD ROUTE
 // ==========================
@@ -1916,58 +1933,104 @@ app.post("/rewarded-ad", checkMaintenance, checkUserSuspended, userRateLimiter, 
         return res.status(404).json({ error: "User not found" });
     }
 
-    // 30 sec cooldown
+    // ==========================
+    // DAILY AD RESET
+    // ==========================
+
+    const today = new Date().toISOString().split("T")[0];
+
+    if (user.last_ad_reset !== today) {
+
+        await supabase
+            .from("users")
+            .update({
+                daily_ad_count: 0,
+                last_ad_reset: today
+            })
+            .eq("telegram_id", telegram_id);
+
+        user.daily_ad_count = 0;
+    }
+
+    // ==========================
+    // COOLDOWN CHECK
+    // ==========================
+
     if (user.last_ad_watch) {
-        const diff = (new Date() - new Date(user.last_ad_watch)) / 1000;
+
+        const diff =
+            (new Date() - new Date(user.last_ad_watch)) / 1000;
+
         if (diff < 30) {
-            return res.status(400).json({ error: "Please wait before next ad" });
+            return res.status(400).json({
+                error: "Please wait before next ad"
+            });
         }
     }
 
+    // ==========================
+    // DAILY LIMIT CHECK
+    // ==========================
+
+    const adLimit = await getSetting("ad_daily_limit") || 300;
+
+    if (user.daily_ad_count >= adLimit) {
+        return res.status(400).json({
+            error: "Daily ad limit reached"
+        });
+    }
+
+    // ==========================
+    // REWARD CALCULATION
+    // ==========================
+
     let reward = 0;
 
-    if (ad_type === "watch")
+    if (ad_type === "watch") {
         reward = await getSetting("watch_ad_reward") || 75;
-
-    if (ad_type === "shortlink")
-        reward = await getSetting("shortlink_reward") || 80;
-    if (ad_type === "spin") reward = 0; // spin reward handled separately
-
-    // Spin via ad → call existing spin logic
-    if (ad_type === "spin") {
-
-        const spinRewards = [10, 75, 40, 15, 100, 20, 65, 150, 0, 90, 55, 30, 70, 85, 200];
-
-        reward = spinRewards[Math.floor(Math.random() * spinRewards.length)];
-
-        await supabase.rpc("increment_coin", {
-            user_telegram_id: telegram_id,
-            amount_to_add: reward
-        });
-
-        await supabase.from("transactions").insert([{
-            user_id: user.id,
-            type: "spin",
-            amount: reward
-        }]);
-    } else {
-
-        await supabase.rpc("increment_coin", {
-            user_telegram_id: telegram_id,
-            amount_to_add: reward
-        });
-
-        await supabase.from("transactions").insert([{
-            user_id: user.id,
-            type: ad_type,
-            amount: reward
-        }]);
     }
+
+    if (ad_type === "shortlink") {
+        reward = await getSetting("shortlink_reward") || 80;
+    }
+
+    if (ad_type === "spin") {
+        const spinRewards = [10, 75, 40, 15, 100, 20, 65, 150, 0, 90, 55, 30, 70, 85, 200];
+        reward = spinRewards[Math.floor(Math.random() * spinRewards.length)];
+    }
+
+    // ==========================
+    // ADD COIN
+    // ==========================
+
+    await supabase.rpc("increment_coin", {
+        user_telegram_id: telegram_id,
+        amount_to_add: reward
+    });
+
+    // ==========================
+    // SAVE TRANSACTION
+    // ==========================
+
+    await supabase
+        .from("transactions")
+        .insert([
+            {
+                user_id: user.id,
+                type: ad_type === "spin" ? "spin" : ad_type,
+                amount: reward
+            }
+        ]);
+
+    // ==========================
+    // UPDATE USER
+    // ==========================
 
     await supabase
         .from("users")
         .update({
-            last_ad_watch: new Date().toISOString()
+            last_ad_watch: new Date().toISOString(),
+            daily_ad_count: user.daily_ad_count + 1
         })
         .eq("telegram_id", telegram_id);
 
@@ -1983,6 +2046,7 @@ app.post("/rewarded-ad", checkMaintenance, checkUserSuspended, userRateLimiter, 
         reward,
         newBalance: updatedUser.coin_balance
     });
+
 });
 
 
